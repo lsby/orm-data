@@ -43,7 +43,7 @@ var x = 关系转对象(
 )
 ```
 */
-export default function 关系转对象<A extends { [key: string]: unknown }, B extends keyof A, C extends (keyof A)[]>(
+export function 关系转对象<A extends { [key: string]: unknown }, B extends keyof A, C extends (keyof A)[]>(
   关系: A[],
   主码: B,
   合并属性: C,
@@ -59,3 +59,47 @@ export default function 关系转对象<A extends { [key: string]: unknown }, B 
   }) as any
 }
 type 对表合并行_返回值计算<C, K extends keyof A, A> = C extends (infer X)[] ? (K extends X ? A[K][] : A[K]) : never
+
+/**
+ * 例如, 输入:
+ * [
+ *     { id: 1, 姓名: 'a', 标签1: 'a1', 标签2: 'c1' },
+ *     { id: 1, 姓名: 'a', 标签1: 'a2', 标签2: 'c2' },
+ *     { id: 1, 姓名: 'b', 标签1: 'a3', 标签2: 'd1' },
+ *     { id: 2, 姓名: 'b', 标签1: 'b1', 标签2: 'd2' },
+ * ]
+ *
+ * 以"id"为主码, ["标签1", "标签2"]为要合并的字段, 以"合并键"为结果属性.
+ *
+ * 得到:
+ * [
+ *     { id: 1, 姓名: 'a', 合并键: [{标签1: 'a1', 标签2: 'c1'}, {标签1: 'a2', 标签2: 'c2'}, {标签1: 'a3', 标签2: 'd1'}] },
+ *     { id: 2, 姓名: 'b', 合并键: [{标签1: 'b1', 标签2: 'd2'}] },
+ * ]
+ */
+export function 关系转对象并组合<
+  A extends { [key: string]: unknown },
+  B extends keyof A,
+  C extends (keyof A)[],
+  D extends string,
+>(关系: A[], 主码: B, 合并属性: C, 结果属性: D): Omit<A, 解数组<C>> & Record<D, { [K in 解数组<C>]: A[K] }[]> {
+  var 转换结果 = 关系转对象(关系, 主码, 合并属性)
+  var 合并结果 = 转换结果.map((转换结果项) => {
+    var 结果键 = _.zip(...合并属性.map((a) => 转换结果项[a])).map((a) =>
+      _.zip(合并属性, a)
+        .map((a) => ({ [a[0] as string]: a[1] }))
+        .reduce((s, a) => Object.assign(s, a), {}),
+    )
+
+    return Object.assign(
+      Object.keys(转换结果项)
+        .map((k) => (合并属性.includes(k) ? null : { [k]: 转换结果项[k] }))
+        .filter((a) => a != null)
+        .reduce((s, a) => Object.assign(s, a), {}),
+      { [结果属性]: 结果键 },
+    )
+  })
+
+  return 合并结果 as any
+}
+type 解数组<A> = A extends Array<infer X> ? X : never
