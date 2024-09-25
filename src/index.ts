@@ -11,8 +11,8 @@ export var 删除列 = RR.删除列
 export var 合并列 = RR.合并列
 
 export var O2R = 对象转关系
-export var O2RM = 关系转对象并组合
 export var R2O = 关系转对象
+export var R2OM = 关系转对象并组合
 export var R_rename = 重命名列
 export var R_remove = 删除列
 export var R_merge = 合并列
