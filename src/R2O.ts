@@ -82,7 +82,7 @@ export function 关系转对象并组合<
   B extends keyof A,
   C extends (keyof A)[],
   D extends string,
->(关系: A[], 主码: B, 合并属性: C, 结果属性: D): Omit<A, 解数组<C>> & Record<D, { [K in 解数组<C>]: A[K] }[]> {
+>(关系: A[], 主码: B, 合并属性: C, 结果属性: D): Array<Omit<A, 解数组<C>> & Record<D, { [K in 解数组<C>]: A[K] }[]>> {
   var 转换结果 = 关系转对象(关系, 主码, 合并属性)
   var 合并结果 = 转换结果.map((转换结果项) => {
     var 结果键 = _.zip(...合并属性.map((a) => 转换结果项[a])).map((a) =>
